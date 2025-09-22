@@ -1,0 +1,24 @@
+Package: dbkit
+Type: Package
+Title: Utilities for SQL Server Connections and Data Upserts/Inserts
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Guy", "Schvitz",
+      email = "guy.schvitz@ec.europa.eu",
+      role = c("aut", "cre")
+    )
+  )
+Description: Provides helper functions for connecting to Microsoft SQL Server 
+    and performing basic data operations. Includes functions for chunked 
+    inserts with transaction support and memory-efficient upserts using SQL 
+    Server 'MERGE'.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+Imports:
+    DBI,
+    glue
+Depends:
+    R (>= 4.0)
