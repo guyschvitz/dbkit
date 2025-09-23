@@ -111,6 +111,22 @@ dbUpsertDataSqlServer <- function(
   temp.table.id <- DBI::Id(schema = schema.name, table = temp.table.name)
   temp.table.str <- qualifyTableMs(schema.name, temp.table.name)
 
+  # Create temp table as an empty copy of the target table to ensure schema compatibility
+  create.temp.sql <- glue::glue("
+    SELECT TOP 0 *
+    INTO {temp.table.str}
+    FROM {table.str}
+  ")
+
+  tryCatch({
+    DBI::dbExecute(conn, glue::glue("DROP TABLE IF EXISTS {temp.table.str}"))
+    DBI::dbExecute(conn, create.temp.sql)
+    if (verbose) message(glue::glue("Created temporary table {temp.table.str} as empty copy of {table.str}"))
+  }, error = function(e) {
+    stop(glue::glue("Failed to create temporary table: {e$message}"))
+  })
+
+  # Insert data into the temp table
   dbInsertDataSqlServer(
     conn = conn,
     new.data = new.data,
