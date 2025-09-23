@@ -86,8 +86,9 @@ dbUpsertDataSqlServer <- function(
   if (!table.exists) {
     rows.inserted <- dbInsertDataSqlServer(
       conn = conn,
-      data.df = new.data,
-      table.id = table.id,
+      new.data = new.data,
+      schema.name = schema.name,
+      table.name = table.name,
       chunk.size = chunk.size,
       overwrite = TRUE,
       verbose = verbose
@@ -112,8 +113,9 @@ dbUpsertDataSqlServer <- function(
 
   dbInsertDataSqlServer(
     conn = conn,
-    data.df = new.data,
-    table.id = temp.table.id,
+    new.data = new.data,
+    schema.name = schema.name,
+    table.name = table.name,
     chunk.size = chunk.size,
     overwrite = TRUE,
     verbose = verbose
