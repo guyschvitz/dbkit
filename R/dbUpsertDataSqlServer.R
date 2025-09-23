@@ -115,7 +115,7 @@ dbUpsertDataSqlServer <- function(
     conn = conn,
     new.data = new.data,
     schema.name = schema.name,
-    table.name = table.name,
+    table.name = temp.table.name,
     chunk.size = chunk.size,
     overwrite = TRUE,
     verbose = verbose
