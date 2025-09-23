@@ -17,26 +17,25 @@ dbInsertDataSqlServer(
 \arguments{
 \item{conn}{A valid SQL Server connection object (from \pkg{DBI}).}
 
+\item{new.data}{A non-empty `data.frame` to insert.}
+
+\item{schema.name}{A non-empty character string specifying the target schema name.}
+
+\item{table.name}{A non-empty character string specifying the target table name.}
+
 \item{chunk.size}{Integer, number of rows per chunk. Default is `10000`.}
 
 \item{overwrite}{Logical; whether to overwrite an existing table. Default is `FALSE`.}
 
 \item{verbose}{Logical; whether to print progress messages. Default is `TRUE`.}
-
-\item{data.df}{A non-empty `data.frame` to insert.}
-
-\item{schema}{A non-empty character string specifying the target schema name.}
-
-\item{table}{A non-empty character string specifying the target table name.}
 }
 \value{
 A `data.frame` transaction log.
 }
 \description{
-Inserts a `data.frame` into a SQL Server table in chunks. Each chunk is
-written inside a transaction savepoint so that errors in one chunk do not
-corrupt previous ones. If any chunk fails, the entire operation is rolled
-back. If all succeed, the transaction is committed.
+Inserts a `data.frame` into a SQL Server table in chunks. All chunks are
+written within a single transaction. If any chunk fails, the entire operation
+is rolled back. If all chunks succeed, the transaction is committed.
 }
 \details{
 The function returns a transaction log as a `data.frame`. Each row records
@@ -58,9 +57,9 @@ Transaction log columns:
 \dontrun{
 log.df <- dbInsertDataSqlServer(
   conn = con,
-  data.df = new.data,
-  schema = "dbo",
-  table = "events",
+  new.data = new.data,
+  schema.name = "dbo",
+  table.name = "events",
   chunk.size = 5000
 )
 }

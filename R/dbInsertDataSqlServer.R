@@ -1,9 +1,8 @@
 #' Insert Data into SQL Server in Chunks with Transaction Support
 #'
-#' Inserts a `data.frame` into a SQL Server table in chunks. Each chunk is
-#' written inside a transaction savepoint so that errors in one chunk do not
-#' corrupt previous ones. If any chunk fails, the entire operation is rolled
-#' back. If all succeed, the transaction is committed.
+#' Inserts a `data.frame` into a SQL Server table in chunks. All chunks are
+#' written within a single transaction. If any chunk fails, the entire operation
+#' is rolled back. If all chunks succeed, the transaction is committed.
 #'
 #' The function returns a transaction log as a `data.frame`. Each row records
 #' a chunk insert or transaction event.
@@ -21,9 +20,9 @@
 #' }
 #'
 #' @param conn A valid SQL Server connection object (from \pkg{DBI}).
-#' @param data.df A non-empty `data.frame` to insert.
-#' @param schema A non-empty character string specifying the target schema name.
-#' @param table A non-empty character string specifying the target table name.
+#' @param new.data A non-empty `data.frame` to insert.
+#' @param schema.name A non-empty character string specifying the target schema name.
+#' @param table.name A non-empty character string specifying the target table name.
 #' @param chunk.size Integer, number of rows per chunk. Default is `10000`.
 #' @param overwrite Logical; whether to overwrite an existing table. Default is `FALSE`.
 #' @param verbose Logical; whether to print progress messages. Default is `TRUE`.
@@ -38,9 +37,9 @@
 #' \dontrun{
 #' log.df <- dbInsertDataSqlServer(
 #'   conn = con,
-#'   data.df = new.data,
-#'   schema = "dbo",
-#'   table = "events",
+#'   new.data = new.data,
+#'   schema.name = "dbo",
+#'   table.name = "events",
 #'   chunk.size = 5000
 #' )
 #' }
