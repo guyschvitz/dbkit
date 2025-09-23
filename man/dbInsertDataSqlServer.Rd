@@ -6,8 +6,9 @@
 \usage{
 dbInsertDataSqlServer(
   conn,
-  data.df,
-  table.id,
+  new.data,
+  schema.name,
+  table.name,
   chunk.size = 10000L,
   overwrite = FALSE,
   verbose = TRUE
@@ -16,16 +17,17 @@ dbInsertDataSqlServer(
 \arguments{
 \item{conn}{A valid SQL Server connection object (from \pkg{DBI}).}
 
-\item{data.df}{A non-empty `data.frame` to insert.}
-
-\item{table.id}{A `DBI::Id` object specifying the target table, or a character
-string for temporary tables.}
-
 \item{chunk.size}{Integer, number of rows per chunk. Default is `10000`.}
 
 \item{overwrite}{Logical; whether to overwrite an existing table. Default is `FALSE`.}
 
 \item{verbose}{Logical; whether to print progress messages. Default is `TRUE`.}
+
+\item{data.df}{A non-empty `data.frame` to insert.}
+
+\item{schema}{A non-empty character string specifying the target schema name.}
+
+\item{table}{A non-empty character string specifying the target table name.}
 }
 \value{
 A `data.frame` transaction log.
@@ -42,7 +44,7 @@ a chunk insert or transaction event.
 
 Transaction log columns:
 \describe{
-  \item{operation}{Type of operation ("insert", "commit", "rollback").}
+  \item{operation}{Type of operation ("insert", "commit", "rollback", "delete").}
   \item{chunk}{Chunk number (if applicable).}
   \item{rows}{Number of rows inserted or affected.}
   \item{start_row}{First row index of the chunk (if applicable).}
@@ -57,7 +59,8 @@ Transaction log columns:
 log.df <- dbInsertDataSqlServer(
   conn = con,
   data.df = new.data,
-  table.id = DBI::Id(schema = "dbo", table = "events"),
+  schema = "dbo",
+  table = "events",
   chunk.size = 5000
 )
 }
