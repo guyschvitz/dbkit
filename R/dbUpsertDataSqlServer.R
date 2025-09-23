@@ -137,6 +137,7 @@ dbUpsertDataSqlServer <- function(
     verbose = verbose
   )
 
+  # Define SQL join operators and identifiers
   timestamp.comparison <- if (keep == "last") ">" else "<"
 
   # Quote column identifiers
@@ -144,6 +145,7 @@ dbUpsertDataSqlServer <- function(
     sprintf("target.%s = source.%s", quoteIdentMs(key.cols), quoteIdentMs(key.cols)),
     collapse = " AND "
   )
+
   non.key.cols <- setdiff(names(new.data), key.cols)
   update.clause <- paste(
     sprintf("target.%s = source.%s", quoteIdentMs(non.key.cols), quoteIdentMs(non.key.cols)),
@@ -152,6 +154,7 @@ dbUpsertDataSqlServer <- function(
   col.list <- paste(quoteIdentMs(names(new.data)), collapse = ", ")
   source.col.list <- paste(paste0("source.", quoteIdentMs(names(new.data))), collapse = ", ")
 
+  # Main SQL upsert merge statement
   merge.sql <- glue::glue("
     MERGE {table.str} AS target
     USING {temp.table.str} AS source
@@ -164,6 +167,7 @@ dbUpsertDataSqlServer <- function(
     OUTPUT $action AS action_type;
   ")
 
+  # Merge operation
   merge.result <- DBI::dbGetQuery(conn, merge.sql)
 
   total.inserted <- sum(merge.result$action_type == "INSERT", na.rm = TRUE)
