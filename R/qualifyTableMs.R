@@ -2,6 +2,7 @@
 #' @param schema schema name
 #' @param table table name
 #' @return [schema].[table]
+#' @export
 qualifyTableMs <- function(schema, table) {
   paste0(quoteIdentMs(schema), ".", quoteIdentMs(table))
 }

@@ -3,6 +3,8 @@
 export(connect2Db)
 export(dbInsertDataSqlServer)
 export(dbUpsertDataSqlServer)
+export(qualifyTableMs)
+export(quoteIdentMs)
 importFrom(DBI,Id)
 importFrom(DBI,dbBegin)
 importFrom(DBI,dbCommit)
