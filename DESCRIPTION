@@ -1,7 +1,7 @@
 Package: dbkit
 Type: Package
 Title: Utilities for SQL Server Connections and Data Upserts/Inserts
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person(
       "Guy", "Schvitz",
@@ -20,6 +20,8 @@ RoxygenNote: 7.3.1
 Imports:
     DBI,
     glue,
-    odbc
+    odbc,
+    RPostgres,
+    sf
 Depends:
     R (>= 4.0)

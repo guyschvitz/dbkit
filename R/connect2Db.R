@@ -1,66 +1,82 @@
 #' Connect to a Database
 #'
 #' Establishes a connection to a database using \pkg{DBI} with the provided
-#' connection parameters. By default, uses an ODBC driver (\code{odbc::odbc()}).
-#' Connection parameters must include driver, server, database, username, and password.
+#' connection parameters. Supports both SQL Server (via ODBC) and PostgreSQL
+#' (via RPostgres).
 #'
-#' @param db.info.ls A named list with database connection parameters. Must include:
-#'   \itemize{
-#'     \item \code{driver}: ODBC driver name
-#'     \item \code{server}: Database server host
-#'     \item \code{database}: Database name
-#'     \item \code{username}: Database user name
-#'     \item \code{password}: Database password
+#' @param db.info.ls A named list with database connection parameters. Required
+#'   fields depend on dialect:
+#'   \describe{
+#'     \item{For mssql:}{
+#'       \itemize{
+#'         \item \code{driver}: ODBC driver name (e.g., "ODBC Driver 17 for SQL Server")
+#'         \item \code{server}: Database server host
+#'         \item \code{database}: Database name
+#'         \item \code{username}: Database user name
+#'         \item \code{password}: Database password
+#'         \item \code{port}: (Optional) Port number, defaults to 1433
+#'       }
+#'     }
+#'     \item{For postgres:}{
+#'       \itemize{
+#'         \item \code{host}: Database server host
+#'         \item \code{dbname}: Database name
+#'         \item \code{user}: Database user name
+#'         \item \code{password}: Database password
+#'         \item \code{port}: (Optional) Port number, defaults to 5432
+#'       }
+#'     }
 #'   }
-#' @param drv A database driver object. Default is \code{odbc::odbc()}.
+#' @param dialect Database dialect: "mssql" or "postgres".
 #'
 #' @return A DBI connection object.
 #' @export
 #'
 #' @importFrom DBI dbConnect
-#' @importFrom odbc odbc
 #'
 #' @examples
 #' \dontrun{
-#' # Create connection info list
-#' db.config.ls <- list(
-#'   driver   = "SQL Server",
+#' # SQL Server connection
+#' mssql.config.ls <- list(
+#'   driver   = "ODBC Driver 17 for SQL Server",
 #'   server   = "localhost",
 #'   database = "mydb",
 #'   username = "user",
 #'   password = "pass"
 #' )
+#' conn <- connect2Db(
+#'   db.info.ls = mssql.config.ls,
+#'   dialect = "mssql"
+#' )
 #'
-#' # Connect using default ODBC driver
-#' con <- connect2Db(db.info.ls = db.config.ls)
-#'
-#' # Connect using a specific driver (example: PostgreSQL)
-#' con <- connect2Db(
-#'   db.info.ls = db.config.ls,
-#'   drv = RPostgreSQL::PostgreSQL()
+#' # PostgreSQL connection
+#' pg.config.ls <- list(
+#'   host     = "localhost",
+#'   dbname   = "mydb",
+#'   user     = "user",
+#'   password = "pass",
+#'   port     = 5432
+#' )
+#' conn <- connect2Db(
+#'   db.info.ls = pg.config.ls,
+#'   dialect = "postgres"
 #' )
 #' }
-connect2Db <- function(db.info.ls, drv = odbc::odbc()) {
-
-  # Validate required parameters
-  required.fields <- c("driver", "server", "database", "username", "password")
-  missing.fields <- setdiff(required.fields, names(db.info.ls))
-
-  if (length(missing.fields) > 0) {
-    stop("Missing required fields in db.info.ls: ", paste(missing.fields, collapse = ", "))
+connect2Db <- function(db.info.ls, dialect) {
+  if (!is.character(dialect) || length(dialect) != 1) {
+    stop("Argument 'dialect' must be a character string")
+  }
+  if (!dialect %in% c("mssql", "postgres")) {
+    stop("Argument 'dialect' must be 'mssql' or 'postgres', got: '", dialect, "'")
+  }
+  if (!is.list(db.info.ls)) {
+    stop("Argument 'db.info.ls' must be a named list")
   }
 
-  # Create database connection
-  con <- DBI::dbConnect(
-    drv = drv,
-    Driver = db.info.ls$driver,
-    Server = db.info.ls$server,
-    Database = db.info.ls$database,
-    UID = db.info.ls$username,
-    PWD = db.info.ls$password,
-    TrustServerCertificate = "yes"
+  conn <- switch(dialect,
+                 mssql = connect2DbMssql(db.info.ls = db.info.ls),
+                 postgres = connect2DbPostgres(db.info.ls = db.info.ls)
   )
 
-  return(con)
+  return(conn)
 }
-
