@@ -50,7 +50,7 @@ dbInsertData <- function(
   }
 
   log.df <- switch(dialect,
-                   mssql = dbInsertDataSqlServer(
+                   mssql = dbInsertDataMssql(
                      conn = conn,
                      new.data = new.data,
                      schema.name = schema.name,

@@ -4,7 +4,7 @@
 #' written within a single transaction. If any chunk fails, the entire operation
 #' is rolled back. If all chunks succeed, the transaction is committed.
 #'
-#' @inheritParams dbInsertDataSqlServer
+#' @inheritParams dbInsertDataMssql
 #' @return A `data.frame` transaction log.
 #' @export
 #'

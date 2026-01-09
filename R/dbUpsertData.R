@@ -51,7 +51,7 @@ dbUpsertData <- function(
   }
 
   log.df <- switch(dialect,
-                   mssql = dbUpsertDataSqlServer(
+                   mssql = dbUpsertDataMssql(
                      conn = conn,
                      new.data = new.data,
                      schema.name = schema.name,

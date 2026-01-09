@@ -35,7 +35,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' log.df <- dbInsertDataSqlServer(
+#' log.df <- dbInsertDataMssql(
 #'   conn = con,
 #'   new.data = new.data,
 #'   schema.name = "dbo",
@@ -43,7 +43,7 @@
 #'   chunk.size = 5000
 #' )
 #' }
-dbInsertDataSqlServer <- function(
+dbInsertDataMssql <- function(
     conn,
     new.data,
     schema.name,

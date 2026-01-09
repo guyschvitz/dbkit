@@ -40,7 +40,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' log.df <- dbUpsertDataSqlServer(
+#' log.df <- dbUpsertDataMssql(
 #'   conn = con,
 #'   new.data = data.df,
 #'   schema.name = "dbo",
@@ -49,7 +49,7 @@
 #'   timestamp.col = "updated_at"
 #' )
 #' }
-dbUpsertDataSqlServer <- function(
+dbUpsertDataMssql <- function(
     conn,
     new.data,
     schema.name,

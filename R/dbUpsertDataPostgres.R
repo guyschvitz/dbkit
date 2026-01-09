@@ -5,7 +5,7 @@
 #' created. Conflicts on key columns are resolved by comparing timestamps,
 #' keeping either the earliest or latest record.
 #'
-#' @inheritParams dbUpsertDataSqlServer
+#' @inheritParams dbUpsertDataMssql
 #' @return A `data.frame` transaction log.
 #' @export
 #'
