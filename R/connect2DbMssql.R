@@ -3,7 +3,9 @@
 #' Internal function to establish SQL Server connection via ODBC.
 #'
 #' @param db.info.ls A named list with: driver, server, database, username, password,
-#'   and optionally port.
+#'   and optionally port and trust.server.cert.
+#' @param trust.cert Character string for SQL Server SSL certificate validation.
+#'   "Yes" to trust self-signed certificates, "No" to enforce validation.
 #'
 #' @return A DBI connection object.
 #'
@@ -11,7 +13,7 @@
 #' @importFrom odbc odbc
 #'
 #' @keywords internal
-connect2DbMssql <- function(db.info.ls) {
+connect2DbMssql <- function(db.info.ls, trust.cert = "Yes") {
   required.fields <- c("driver", "server", "database", "username", "password")
   missing.fields <- setdiff(required.fields, names(db.info.ls))
 
@@ -22,16 +24,20 @@ connect2DbMssql <- function(db.info.ls) {
     )
   }
 
-  port <- if (!is.null(db.info.ls$port)) db.info.ls$port else 1433L
+  # SQL Server ODBC expects port appended to server with comma separator
+  server.str <- db.info.ls$server
+  if (!is.null(db.info.ls$port)) {
+    server.str <- paste0(db.info.ls$server, ",", db.info.ls$port)
+  }
 
   conn <- DBI::dbConnect(
     drv = odbc::odbc(),
     Driver = db.info.ls$driver,
-    Server = db.info.ls$server,
+    Server = server.str,
     Database = db.info.ls$database,
     UID = db.info.ls$username,
     PWD = db.info.ls$password,
-    Port = port
+    TrustServerCertificate = trust.cert
   )
 
   return(conn)

@@ -84,7 +84,7 @@ dbUpsertDataMssql <- function(
   table.str <- qualifyTableMs(schema.name, table.name)
 
   if (!table.exists) {
-    rows.inserted <- dbInsertDataSqlServer(
+    rows.inserted <- dbInsertDataMssql(
       conn = conn,
       new.data = new.data,
       schema.name = schema.name,
@@ -127,7 +127,7 @@ dbUpsertDataMssql <- function(
   })
 
   # Insert data into the temp table
-  dbInsertDataSqlServer(
+  dbInsertDataMssql(
     conn = conn,
     new.data = new.data,
     schema.name = schema.name,

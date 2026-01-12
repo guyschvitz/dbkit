@@ -4,11 +4,14 @@
 \alias{connect2DbMssql}
 \title{Connect to SQL Server Database}
 \usage{
-connect2DbMssql(db.info.ls)
+connect2DbMssql(db.info.ls, trust.cert = "Yes")
 }
 \arguments{
 \item{db.info.ls}{A named list with: driver, server, database, username, password,
-and optionally port.}
+and optionally port and trust.server.cert.}
+
+\item{trust.cert}{Character string for SQL Server SSL certificate validation.
+"Yes" to trust self-signed certificates, "No" to enforce validation.}
 }
 \value{
 A DBI connection object.

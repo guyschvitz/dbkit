@@ -4,7 +4,7 @@
 \alias{connect2Db}
 \title{Connect to a Database}
 \usage{
-connect2Db(db.info.ls, dialect)
+connect2Db(db.info.ls, dialect, trust.cert = "Yes")
 }
 \arguments{
 \item{db.info.ls}{A named list with database connection parameters. Required
@@ -12,12 +12,12 @@ fields depend on dialect:
 \describe{
   \item{For mssql:}{
     \itemize{
-      \item \code{driver}: ODBC driver name (e.g., "ODBC Driver 17 for SQL Server")
+      \item \code{driver}: ODBC driver name (e.g., "ODBC Driver 18 for SQL Server")
       \item \code{server}: Database server host
       \item \code{database}: Database name
       \item \code{username}: Database user name
       \item \code{password}: Database password
-      \item \code{port}: (Optional) Port number, defaults to 1433
+      \item \code{port}: (Optional) Port number, appended to server as "server,port"
     }
   }
   \item{For postgres:}{
@@ -31,7 +31,11 @@ fields depend on dialect:
   }
 }}
 
-\item{dialect}{Database dialect: "mssql" or "postgres".}
+\item{dialect}{Character string specifying database dialect: "mssql" or "postgres".}
+
+\item{trust.cert}{Character string for SQL Server SSL certificate validation.
+"Yes" to trust self-signed certificates, "No" to enforce validation.
+Default is "Yes". Ignored for postgres connections.}
 }
 \value{
 A DBI connection object.
@@ -45,7 +49,7 @@ connection parameters. Supports both SQL Server (via ODBC) and PostgreSQL
 \dontrun{
 # SQL Server connection
 mssql.config.ls <- list(
-  driver   = "ODBC Driver 17 for SQL Server",
+  driver   = "ODBC Driver 18 for SQL Server",
   server   = "localhost",
   database = "mydb",
   username = "user",
