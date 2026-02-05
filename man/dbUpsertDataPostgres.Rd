@@ -48,3 +48,12 @@ Efficiently upserts large data frames into a PostgreSQL table using
 created. Conflicts on key columns are resolved by comparing timestamps,
 keeping either the earliest or latest record.
 }
+\section{Constraint Requirement}{
+
+PostgreSQL's `ON CONFLICT` clause requires a unique constraint or index on
+the key columns. When this function creates a new table, it automatically
+adds a unique constraint named `\{table_name\}_upsert_key`. If upserting to a
+table created outside this function, you must ensure an appropriate unique
+constraint or index exists on `key.cols`, otherwise the upsert will fail.
+}
+

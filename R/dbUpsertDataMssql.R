@@ -104,58 +104,59 @@ dbUpsertDataMssql <- function(
       message = "table created and data inserted",
       timestamp = Sys.time()
     ))
-  }
 
-  # Staging (temp) table name
-  temp.table.name <- sprintf("%s%s", table.name, format(Sys.time(), "%Y%m%d%H%M"))
-  temp.table.id <- DBI::Id(schema = schema.name, table = temp.table.name)
-  temp.table.str <- qualifyTableMs(schema.name, temp.table.name)
+  } else {
 
-  # Create temp table as an empty copy of the target table to ensure schema compatibility
-  create.temp.sql <- glue::glue("
+    # Staging (temp) table name
+    temp.table.name <- sprintf("%s%s", table.name, format(Sys.time(), "%Y%m%d%H%M"))
+    temp.table.id <- DBI::Id(schema = schema.name, table = temp.table.name)
+    temp.table.str <- qualifyTableMs(schema.name, temp.table.name)
+
+    # Create temp table as an empty copy of the target table to ensure schema compatibility
+    create.temp.sql <- glue::glue("
     SELECT TOP 0 *
     INTO {temp.table.str}
     FROM {table.str}
   ")
 
-  tryCatch({
-    DBI::dbExecute(conn, glue::glue("DROP TABLE IF EXISTS {temp.table.str}"))
-    DBI::dbExecute(conn, create.temp.sql)
-    if (verbose) message(glue::glue("Created temporary table {temp.table.str} as empty copy of {table.str}"))
-  }, error = function(e) {
-    stop(glue::glue("Failed to create temporary table: {e$message}"))
-  })
+    tryCatch({
+      DBI::dbExecute(conn, glue::glue("DROP TABLE IF EXISTS {temp.table.str}"))
+      DBI::dbExecute(conn, create.temp.sql)
+      if (verbose) message(glue::glue("Created temporary table {temp.table.str} as empty copy of {table.str}"))
+    }, error = function(e) {
+      stop(glue::glue("Failed to create temporary table: {e$message}"))
+    })
 
-  # Insert data into the temp table
-  dbInsertDataMssql(
-    conn = conn,
-    new.data = new.data,
-    schema.name = schema.name,
-    table.name = temp.table.name,
-    chunk.size = chunk.size,
-    overwrite = TRUE,
-    verbose = verbose
-  )
+    # Insert data into the temp table
+    dbInsertDataMssql(
+      conn = conn,
+      new.data = new.data,
+      schema.name = schema.name,
+      table.name = temp.table.name,
+      chunk.size = chunk.size,
+      overwrite = TRUE,
+      verbose = verbose
+    )
 
-  # Define SQL join operators and identifiers
-  timestamp.comparison <- if (keep == "last") ">" else "<"
+    # Define SQL join operators and identifiers
+    timestamp.comparison <- if (keep == "last") ">" else "<"
 
-  # Quote column identifiers
-  join.condition <- paste(
-    sprintf("target.%s = source.%s", quoteIdentMs(key.cols), quoteIdentMs(key.cols)),
-    collapse = " AND "
-  )
+    # Quote column identifiers
+    join.condition <- paste(
+      sprintf("target.%s = source.%s", quoteIdentMs(key.cols), quoteIdentMs(key.cols)),
+      collapse = " AND "
+    )
 
-  non.key.cols <- setdiff(names(new.data), key.cols)
-  update.clause <- paste(
-    sprintf("target.%s = source.%s", quoteIdentMs(non.key.cols), quoteIdentMs(non.key.cols)),
-    collapse = ", "
-  )
-  col.list <- paste(quoteIdentMs(names(new.data)), collapse = ", ")
-  source.col.list <- paste(paste0("source.", quoteIdentMs(names(new.data))), collapse = ", ")
+    non.key.cols <- setdiff(names(new.data), key.cols)
+    update.clause <- paste(
+      sprintf("target.%s = source.%s", quoteIdentMs(non.key.cols), quoteIdentMs(non.key.cols)),
+      collapse = ", "
+    )
+    col.list <- paste(quoteIdentMs(names(new.data)), collapse = ", ")
+    source.col.list <- paste(paste0("source.", quoteIdentMs(names(new.data))), collapse = ", ")
 
-  # Main SQL upsert merge statement
-  merge.sql <- glue::glue("
+    # Main SQL upsert merge statement
+    merge.sql <- glue::glue("
     MERGE {table.str} AS target
     USING {temp.table.str} AS source
     ON {join.condition}
@@ -167,35 +168,36 @@ dbUpsertDataMssql <- function(
     OUTPUT $action AS action_type;
   ")
 
-  # Merge operation
-  merge.result <- DBI::dbGetQuery(conn, merge.sql)
+    # Merge operation
+    merge.result <- DBI::dbGetQuery(conn, merge.sql)
 
-  total.inserted <- sum(merge.result$action_type == "INSERT", na.rm = TRUE)
-  total.updated <- sum(merge.result$action_type == "UPDATE", na.rm = TRUE)
+    total.inserted <- sum(merge.result$action_type == "INSERT", na.rm = TRUE)
+    total.updated <- sum(merge.result$action_type == "UPDATE", na.rm = TRUE)
 
-  log.df <- rbind(log.df, data.frame(
-    operation = "merge",
-    chunk = NA,
-    rows = nrow(new.data),
-    start_row = 1,
-    end_row = nrow(new.data),
-    status = "success",
-    message = glue::glue("inserted={total.inserted}, updated={total.updated}"),
-    timestamp = Sys.time()
-  ))
-
-  if (DBI::dbExistsTable(conn, temp.table.id)) {
-    DBI::dbRemoveTable(conn, temp.table.id)
     log.df <- rbind(log.df, data.frame(
-      operation = "cleanup",
+      operation = "merge",
       chunk = NA,
-      rows = 0,
-      start_row = NA,
-      end_row = NA,
+      rows = nrow(new.data),
+      start_row = 1,
+      end_row = nrow(new.data),
       status = "success",
-      message = "temporary table removed",
+      message = glue::glue("inserted={total.inserted}, updated={total.updated}"),
       timestamp = Sys.time()
     ))
+
+    if (DBI::dbExistsTable(conn, temp.table.id)) {
+      DBI::dbRemoveTable(conn, temp.table.id)
+      log.df <- rbind(log.df, data.frame(
+        operation = "cleanup",
+        chunk = NA,
+        rows = 0,
+        start_row = NA,
+        end_row = NA,
+        status = "success",
+        message = "temporary table removed",
+        timestamp = Sys.time()
+      ))
+    }
   }
 
   return(log.df)

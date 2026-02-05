@@ -1,7 +1,7 @@
 Package: dbkit
 Type: Package
 Title: Utilities for SQL Server Connections and Data Upserts/Inserts
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
     person(
       "Guy", "Schvitz",
